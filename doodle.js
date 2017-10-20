@@ -356,7 +356,6 @@ _setDrag和_createHandle方法依赖jq-ui
       var xo = this.canvasTempLeftOriginal,
           yo = this.canvasTempTopOriginal;
 
-      // we may need these in other funcs, so we'll just pass them along with the event
       factor = factor || 2;
     	//$canvasTemp的左上角坐标位置
       e.left = (e.pageX < xo ? e.pageX : xo);
@@ -470,7 +469,7 @@ _setDrag和_createHandle方法依赖jq-ui
       this.setAlignment(this.options.alignment);
     },
 
-    // create / reset menu - will add new entries in the array
+    // create / reset menu 
     reset: function () {
     	var _this = this,
 		//拿到菜单下所有菜单选项
@@ -566,12 +565,10 @@ _setDrag和_createHandle方法依赖jq-ui
         _this._setIndex();
       }
 
-      // the drag/snap events for menus are tricky
-      // init handle for ALL menus, primary menu will drag a secondary menu with it, but that is un/binded in the toggle function
+
       this.$menu.draggable({handle: $handle});
       console.log(this.type)
-      // if it's a secondary menu we want to check for snapping
-      // on drag we set docked to false, on snap we set it back to true
+
       if (this.type === 'secondary') {
       	this.$menu.draggable('option', 'snap', this.kDoodle.menus.primary.$menu);
         this.$menu.draggable('option', 'start', draggableStart);
@@ -646,9 +643,7 @@ _setDrag和_createHandle方法依赖jq-ui
       // local functions
       function setIconClick() {
 
-        // only trigger if menu is not visible otherwise it will fire twice
-        // from the mousedown to open the menu which we want just to display the menu
-        // not fire the button callback
+        // 如果菜单不可见，从按下鼠标到打开菜单不触发按钮回调，仅仅展示菜单，要不然将会被触发2次 
       	if (!$icon.children('.kDoodle-menu-select-holder').is(':visible')) {
       		item.callback.apply(_this.kDoodle, []);
         }
@@ -660,13 +655,13 @@ _setDrag和_createHandle方法依赖jq-ui
 
       function optionClick() {
 
-        // rebind the main icon when we select an option
+        // 当我们选中一个选项时重新绑定主图标
         $icon
         .attr('title', item.title)
         .off('click.setIcon')
         .on('click.setIcon', setIconClick);
         
-        // run the callback right away when we select an option
+        // 选中一个选项时马上运行回调
         $icon.children('.kDoodle-menu-icon-img').css(css);
         item.callback.apply(_this.kDoodle, []);
       }
@@ -679,8 +674,6 @@ _setDrag和_createHandle方法依赖jq-ui
         .on('mousedown', $.proxy(this._iconClick, this));
       }
 
-      // get the proper width here now that we have the icon
-      // this is for the select box group not the main icon
       width = $icon.children('.kDoodle-menu-icon-img').realWidth(null, null, this.kDoodle.$el);
       css.backgroundPosition = (-width * item.index) + 'px center';
 
@@ -701,12 +694,10 @@ _setDrag和_createHandle方法依赖jq-ui
       .addClass('kDoodle-menu-icon-name-' + item.name)
       .on('click', optionClick);
 
-      // move select option into place if after is set
       if (item.after) {
       	$selectHolder.children('.kDoodle-menu-select').children('.kDoodle-menu-icon-name-' + item.after).after($option);
       }
 
-      // we only want to return an icon to append on the first run of a group
       if (!iconExists) { return $icon; }
     },
 
@@ -715,7 +706,6 @@ _setDrag和_createHandle方法依赖jq-ui
      ************************************/
     _createIconGeneric: function (item) {
 
-      // just a go between for the iconGeneric type
       return this._createIconActivate(item);
     },
 
@@ -724,8 +714,6 @@ _setDrag和_createHandle方法依赖jq-ui
      ************************************/
     _createIconActivate: function (item) {
 
-      // since we are piggy backing icon with the item.group
-      // we'll just do a redirect and keep the code separate for group icons
       if (item.group) { return this._createIconGroup(item); }
 
       var _this = this,
@@ -766,7 +754,6 @@ _setDrag和_createHandle方法依赖jq-ui
     	var $el = $(e.currentTarget),//currentTarget 事件属性返回其监听器触发事件的节点，即当前处理该事件的元素、文档或窗口。
           menus = this.kDoodle.menus.all;
 
-    	// make sure to loop using parent object - don't use .kDoodle-menu-secondary otherwise we would hide menu for all canvases
       for (var menu in menus) {//
         if (menus[menu] && menus[menu].type === 'secondary') { menus[menu].$menu.hide(); }  
       }
@@ -848,11 +835,10 @@ _setDrag和_createHandle方法依赖jq-ui
       .on('click', clickSelectHolder)
       .hide();
 
-      // of hozizontal we'll pop below the icon
       if (this.options.alignment === 'horizontal') {
       	$selectHolder.css({ left: 0, top: $icon.children('.kDoodle-menu-icon-img').realHeight('outer', true, this.kDoodle.$el) });
       }
-      // vertical we'll pop to the right
+
       else {
       	$selectHolder.css({ left: $icon.children('.kDoodle-menu-icon-img').realWidth('outer', true, this.kDoodle.$el), top: 0 });
       }
@@ -862,7 +848,6 @@ _setDrag和_createHandle方法依赖jq-ui
       .append('<div class="kDoodle-menu-icon-group-arrow"></div>')
       .append($selectHolder.append($select));
     	//为有下拉框的一级菜单添加一个延时，这样点击一下一级菜单并不会立马出发该事件，而要延时200ms才会触发该事件（要想让下拉框出现，需长按鼠标）
-      // for groups we want to add a delay before the selectBox pops up
       if ($icon.hasClass('kDoodle-menu-icon-group')) {
         $icon
         .on('mousedown', iconMousedown)
@@ -881,7 +866,6 @@ _setDrag和_createHandle方法依赖jq-ui
     	var $select = $selectHolder.children('.kDoodle-menu-select'),//创建下拉框的唯一子盒子
           $option = $('<div class="kDoodle-menu-select-option"></div>').append(value);//创建下拉框的每一个选项盒子并添加值（元素）
 
-      // set class for first item to remove any undesired styles like borders
       if (!$select.children().length) { $option.addClass('first'); }
 		//把创建好的选项盒子插入到下拉框中
       $select.append($option);
@@ -901,8 +885,6 @@ _setDrag和_createHandle方法依赖jq-ui
           $icon = this._createIconBase(item);
 
       function iconClick() {
-
-        // if we happen to click on this while in dropper mode just revert to previous
       	if (_this.kDoodle.options.mode === 'dropper') { _this.kDoodle.setMode(_this.kDoodle.previousMode); }
       }
 
@@ -947,7 +929,7 @@ _setDrag和_createHandle方法依赖jq-ui
         // the items name here will be the menu name
       	var menu = _this.kDoodle.menus.all[item.name];
         menu.$menu.toggle();//创建另一菜单
-        if (_this.handle) {//好像一直都是undefined
+        if (_this.handle) {
           menu._setDrag();
         } else {
           menu._setPosition();//让弹出的菜单处于正确的位置
@@ -959,7 +941,6 @@ _setDrag和_createHandle方法依赖jq-ui
       return $icon;
     },
 
-    // here we specify which menu will be dragged
     _setDrag: function () {
       var $menu = this.$menu,
           drag = null, stop = null;
@@ -968,7 +949,6 @@ _setDrag和_createHandle方法依赖jq-ui
       	console.log(this.docked)
         if (this.docked) {
 
-          // make sure we are setting proper menu object here
           drag = stop = $.proxy(this._setPosition, this);
           this._setPosition();
         }
@@ -1010,15 +990,6 @@ _setDrag和_createHandle方法依赖jq-ui
   $.support.canvas = (document.createElement('canvas')).getContext;
 
   $.fn.kDoodle = function (options, value) {
-
-    //function create() {
-    //  if (!$.support.canvas) {
-    //    $(this).html('Browser does not support HTML5 canvas, please upgrade to a more modern browser.');
-    //    return false;
-    //  }
-
-    //  return $.proxy(get, this)();
-    //}
 
   	function get() {
   		if (!$.support.canvas) {
@@ -1107,17 +1078,17 @@ _setDrag和_createHandle方法依赖jq-ui
   $.fn.kDoodle.cursors = {};
 
   $.fn.kDoodle.defaults = {
-    path:            '',                // set absolute path for images and cursors
-    theme:           'standard classic', // set theme
-    autoScaleImage:  true,               // auto scale images to size of canvas (fg and bg)
-    autoCenterImage: true,               // auto center images (fg and bg, default is left/top corner)
-    menuHandle:      true,               // setting to false will means menus cannot be dragged around
-    menuOrientation: 'horizontal',       // menu alignment (horizontal,vertical)
-    menuOffsetLeft:  5,                  // left offset of primary menu
-    menuOffsetTop:   5,                  // top offset of primary menu
-    bg:              null,               // set bg on init
-    image:           null,               // set image on init
-    imageStretch:    false,              // stretch smaller images to full canvans dimensions
+    path:            '',                // 为 images and cursors设置绝对路径
+    theme:           'standard classic', // 设置 theme
+    autoScaleImage:  true,               // 自动缩放图片的尺寸 (fg and bg)
+    autoCenterImage: true,               // 图片自动居中(fg and bg, 默认左上角)
+    menuHandle:      true,               // 设置为false就意味着菜单不能拖拽
+    menuOrientation: 'horizontal',       // 菜单对齐方式 (horizontal,vertical)
+    menuOffsetLeft:  5,                  // 主菜单的左偏移量
+    menuOffsetTop:   5,                  // 主菜单的top偏移量
+    bg:              null,               // 设置 初始化背景
+    image:           null,               // 设置初始化图片
+    imageStretch:    false,              // 自动缩小尺寸以充满画布的面积
     onShapeDown:     null,               // callback for draw down event
     onShapeMove:     null,               // callback for draw move event
     onShapeUp:       null                // callback for draw up event
